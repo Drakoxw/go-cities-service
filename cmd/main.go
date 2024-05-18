@@ -31,6 +31,8 @@ func main() {
 	database.LoadData(db)
 
 	e := echo.New()
+	e.Use(middleware.CORS())
+	e.Use(utils.ForceJSONMiddleware)
 	e.Use(middleware.Recover())
 
 	cityRepo := mysql.NewMySQLCityRepository(db)
