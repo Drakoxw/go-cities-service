@@ -37,7 +37,7 @@ func main() {
 	cityUC := usecase.NewCityUseCase(cityRepo)
 	handlers.NewCityHandler(e, cityUC)
 
-	cron := time.NewTicker(30 * time.Second)
+	cron := time.NewTicker(12 * time.Hour)
 	go func() {
 		for {
 			select {

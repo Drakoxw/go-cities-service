@@ -37,27 +37,38 @@ func (r *MySQLCityRepository) SearchCities(ctx context.Context, name string, pag
 }
 
 func (r *MySQLCityRepository) UpdateCities(ctx context.Context, cities []models.City) error {
+	if len(cities) == 0 {
+		return fmt.Errorf("se quiere al menos una ciudad")
+	}
+
 	tx, err := r.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
 	if _, err := tx.ExecContext(ctx, "DELETE FROM cities"); err != nil {
-		tx.Rollback()
 		return err
 	}
 
 	stmt, err := tx.PrepareContext(ctx, "INSERT INTO cities (nombre, codigo_dane, departamento) VALUES (?, ?, ?)")
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 	defer stmt.Close()
 
-	for _, city := range cities {
-		if _, err := stmt.ExecContext(ctx, city.Nombre, city.CodigoDANE, city.Departamento); err != nil {
-			tx.Rollback()
-			return err
+	batchSize := 500 // Tamaño del lote
+	for i := 0; i < len(cities); i += batchSize {
+		end := i + batchSize
+		if end > len(cities) {
+			end = len(cities)
+		}
+
+		batch := cities[i:end]
+		for _, city := range batch {
+			if _, err := stmt.ExecContext(ctx, city.Nombre, city.CodigoDANE, city.Departamento); err != nil {
+				return err
+			}
 		}
 	}
 
