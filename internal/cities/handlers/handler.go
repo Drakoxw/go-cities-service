@@ -3,8 +3,11 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Drakoxw/go-cities-service/internal/cities/usecase"
+	"github.com/Drakoxw/go-cities-service/internal/cities/utils"
+	"github.com/Drakoxw/go-cities-service/internal/models"
 	"github.com/labstack/echo/v4"
 )
 
@@ -37,17 +40,26 @@ func (h *CityHandler) SearchCities(c echo.Context) error {
 		order = "ASC"
 	}
 
-	cities, err := h.CityUC.SearchCities(c.Request().Context(), name, page, limit, sort, order)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		})
+	validSorts := map[string]bool{"id": true, "nombre": true, "codigodane": true, "departamento": true}
+	if !validSorts[sort] {
+		return c.JSON(http.StatusBadRequest, utils.BabResponse("Parámetro de ordenación inválido"))
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"success":  true,
-		"message":  "registros encontrados",
-		"ciudades": cities,
-	})
+	order = strings.ToUpper(order)
+	if order != "ASC" && order != "DESC" {
+		return c.JSON(http.StatusBadRequest, utils.BabResponse("Parámetro de orden inválido"))
+	}
+
+	cities, err := h.CityUC.SearchCities(c.Request().Context(), name, page, limit, sort, order)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, utils.BabResponse(err.Error()))
+	}
+
+	message := "registros encontrados"
+	if cities == nil {
+		message = "no hubieron coincidencias"
+		cities = []models.City{}
+	}
+
+	return c.JSON(http.StatusOK, utils.OkResponseData(message, cities))
 }
