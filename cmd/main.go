@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
@@ -14,6 +14,7 @@ import (
 	"github.com/Drakoxw/go-cities-service/internal/cities/handlers"
 	"github.com/Drakoxw/go-cities-service/internal/cities/repository/mysql"
 	"github.com/Drakoxw/go-cities-service/internal/cities/usecase"
+	"github.com/Drakoxw/go-cities-service/internal/cities/utils"
 	"github.com/labstack/echo/v4"
 )
 
@@ -39,7 +40,7 @@ func LoadData(db *sql.DB) {
 	}
 	defer jsonFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 	var cities []models.City
 	json.Unmarshal(byteValue, &cities)
 
@@ -72,5 +73,6 @@ func main() {
 	cityUC := usecase.NewCityUseCase(cityRepo)
 	handlers.NewCityHandler(e, cityUC)
 
-	log.Fatal(e.Start(":3010"))
+	port := utils.GetPort()
+	log.Fatal(e.Start(port))
 }
