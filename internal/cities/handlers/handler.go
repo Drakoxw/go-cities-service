@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -18,6 +20,36 @@ type CityHandler struct {
 func NewCityHandler(e *echo.Echo, uc *usecase.CityUseCase) {
 	handler := &CityHandler{CityUC: uc}
 	e.GET("/search", handler.SearchCities)
+	e.POST("/webhook/update-cities", handler.UpdateCities)
+}
+
+func (h *CityHandler) UpdateCities(c echo.Context) error {
+	url := "https://app.aveonline.co/assets/resources/public/listadociudades.json"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"success": false,
+			"message": "Error al descargar el archivo JSON",
+		})
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, utils.BabResponse("Error al leer el archivo JSON"))
+	}
+
+	var cities []models.City
+	if err := json.Unmarshal(body, &cities); err != nil {
+		return c.JSON(http.StatusInternalServerError, utils.BabResponse("Error al decodificar el archivo JSON"))
+	}
+
+	if err := h.CityUC.UpdateCities(c.Request().Context(), cities); err != nil {
+		return c.JSON(http.StatusInternalServerError, utils.BabResponse(err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, utils.OkResponse("Ciudades actualizadas correctamente"))
 }
 
 func (h *CityHandler) SearchCities(c echo.Context) error {
