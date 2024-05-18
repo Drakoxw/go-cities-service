@@ -1,9 +1,13 @@
 package usecase
 
-import "github.com/Drakoxw/go-cities-service/internal/models"
+import (
+	"context"
+
+	"github.com/Drakoxw/go-cities-service/internal/models"
+)
 
 type CityRepository interface {
-	GetCitiesByName(name string, limit int) ([]models.City, error)
+	SearchCities(ctx context.Context, name string, page, limit int, sort, order string) ([]models.City, error)
 }
 
 type CityUseCase struct {
@@ -13,7 +17,6 @@ type CityUseCase struct {
 func NewCityUseCase(repo CityRepository) *CityUseCase {
 	return &CityUseCase{CityRepo: repo}
 }
-
-func (uc *CityUseCase) SearchCitiesByName(name string, limit int) ([]models.City, error) {
-	return uc.CityRepo.GetCitiesByName(name, limit)
+func (u *CityUseCase) SearchCities(ctx context.Context, name string, page, limit int, sort, order string) ([]models.City, error) {
+	return u.CityRepo.SearchCities(ctx, name, page, limit, sort, order)
 }

@@ -1,7 +1,9 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/Drakoxw/go-cities-service/internal/models"
 )
@@ -14,8 +16,10 @@ func NewMySQLCityRepository(db *sql.DB) *MySQLCityRepository {
 	return &MySQLCityRepository{DB: db}
 }
 
-func (r *MySQLCityRepository) GetCitiesByName(name string, limit int) ([]models.City, error) {
-	rows, err := r.DB.Query("SELECT id, nombre, codigo_dane, departamento FROM cities WHERE nombre LIKE ? LIMIT ?", "%"+name+"%", limit)
+func (r *MySQLCityRepository) SearchCities(ctx context.Context, name string, page, limit int, sort, order string) ([]models.City, error) {
+	offset := (page - 1) * limit
+	query := fmt.Sprintf("SELECT id, nombre, codigo_dane, departamento FROM cities WHERE nombre LIKE ? ORDER BY %s %s LIMIT ? OFFSET ?", sort, order)
+	rows, err := r.DB.QueryContext(ctx, query, "%"+name+"%", limit, offset)
 	if err != nil {
 		return nil, err
 	}

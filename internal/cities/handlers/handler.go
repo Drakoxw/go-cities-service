@@ -19,13 +19,25 @@ func NewCityHandler(e *echo.Echo, uc *usecase.CityUseCase) {
 
 func (h *CityHandler) SearchCities(c echo.Context) error {
 	name := c.QueryParam("name")
-	limitStr := c.QueryParam("limit")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	sort := c.QueryParam("sort")
+	order := c.QueryParam("order")
+
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 {
 		limit = 10
 	}
+	if sort == "" {
+		sort = "nombre"
+	}
+	if order == "" {
+		order = "ASC"
+	}
 
-	cities, err := h.CityUC.SearchCitiesByName(name, limit)
+	cities, err := h.CityUC.SearchCities(c.Request().Context(), name, page, limit, sort, order)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"success": false,
