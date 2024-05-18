@@ -1,12 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/Drakoxw/go-cities-service/internal/cities/functions"
 	"github.com/Drakoxw/go-cities-service/internal/cities/usecase"
 	"github.com/Drakoxw/go-cities-service/internal/cities/utils"
 	"github.com/Drakoxw/go-cities-service/internal/models"
@@ -24,25 +23,10 @@ func NewCityHandler(e *echo.Echo, uc *usecase.CityUseCase) {
 }
 
 func (h *CityHandler) UpdateCities(c echo.Context) error {
-	url := "https://app.aveonline.co/assets/resources/public/listadociudades.json"
 
-	resp, err := http.Get(url)
+	cities, err := functions.GetCitiesFromFile()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"message": "Error al descargar el archivo JSON",
-		})
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, utils.BabResponse("Error al leer el archivo JSON"))
-	}
-
-	var cities []models.City
-	if err := json.Unmarshal(body, &cities); err != nil {
-		return c.JSON(http.StatusInternalServerError, utils.BabResponse("Error al decodificar el archivo JSON"))
+		return c.JSON(http.StatusInternalServerError, utils.BabResponse(err.Error()))
 	}
 
 	if err := h.CityUC.UpdateCities(c.Request().Context(), cities); err != nil {
