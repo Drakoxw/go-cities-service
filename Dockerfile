@@ -1,15 +1,38 @@
-#build stage
-FROM golang:alpine AS builder
-RUN apk add --no-cache git
-WORKDIR /go/src/app
-COPY . .
-RUN go get -d -v ./...
-RUN go build -o /go/bin/app -v ./...
+# Etapa 1: Construcción del binario
+FROM golang:1.18 AS builder
 
-#final stage
+# Establecer el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiar los archivos del proyecto al contenedor
+COPY . .
+
+# Descargar las dependencias
+RUN go mod download
+
+# Construir el binario
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o citysearch cmd/main.go
+
+# Etapa 2: Construcción de la imagen final
 FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-COPY --from=builder /go/bin/app /app
-ENTRYPOINT /app
-LABEL Name=gocitiesservice Version=0.0.1
+
+# Establecer el directorio de trabajo dentro del contenedor
+WORKDIR /root/
+
+# Copiar el binario desde la etapa de construcción
+COPY --from=builder /app/citysearch .
+
+# Copiar el archivo de datos
+COPY data/cities.json ./data/cities.json
+
+# Copiar el script wait-for-it
+COPY wait-for-it.sh .
+
+# Hacer ejecutable el script wait-for-it
+RUN chmod +x wait-for-it.sh
+
+# Exponer el puerto 3010
 EXPOSE 3010
+
+# Ejecutar el binario
+CMD ["./wait-for-it.sh", "mysql", "--", "./citysearch"]

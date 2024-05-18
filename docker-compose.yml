@@ -1,10 +1,27 @@
-version: '3.4'
+version: '3.8'
 
 services:
-  gocitiesservice:
-    image: gocitiesservice
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ""  # O puedes usar MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: drakodb
     ports:
-      - 3010:3010
+      - "3308:3306"  # Mapea el puerto 3306 del contenedor al puerto 3308 del host
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: citysearch
+    ports:
+      - "3010:3010"
+    depends_on:
+      - mysql
+    environment:
+      DSN: root:@tcp(mysql:3306)/drakodb  # Cambia a 3306 porque es el puerto interno de MySQL en el contenedor
+
+volumes:
+  mysql-data:
+
