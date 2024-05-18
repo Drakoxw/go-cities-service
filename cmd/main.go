@@ -19,8 +19,8 @@ import (
 )
 
 func main() {
-	dsn := "root:@tcp(localhost:3307)/drakodb" // conexion local
-	// dsn := "root:@tcp(mysql:3306)/drakodb"
+	// dsn := "root:@tcp(localhost:3307)/drakodb" // conexion local
+	dsn := "root:@tcp(mysql:3306)/drakodb"
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
@@ -44,9 +44,8 @@ func main() {
 			case <-cron.C:
 				err = crones.UpdateCities(cityUC)
 				if err != nil {
-					// log.Println("❌❌" + err.Error() + "❌❌")
+					log.Println("❌❌" + err.Error() + "❌❌")
 				}
-				log.Println("Datos actualizados")
 			}
 		}
 	}()
