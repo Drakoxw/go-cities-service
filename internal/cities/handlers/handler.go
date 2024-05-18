@@ -37,11 +37,15 @@ func (h *CityHandler) UpdateCities(c echo.Context) error {
 }
 
 func (h *CityHandler) SearchCities(c echo.Context) error {
-	name := c.QueryParam("name")
+	name := c.QueryParam("query")
 	page, _ := strconv.Atoi(c.QueryParam("page"))
 	limit, _ := strconv.Atoi(c.QueryParam("limit"))
 	sort := c.QueryParam("sort")
 	order := c.QueryParam("order")
+
+	if len(name) < 4 {
+		return c.JSON(http.StatusBadRequest, utils.BabResponse("Se requie al menos 3 caracteres"))
+	}
 
 	if page <= 0 {
 		page = 1

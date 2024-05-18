@@ -57,7 +57,7 @@ func (r *MySQLCityRepository) UpdateCities(ctx context.Context, cities []models.
 	}
 	defer stmt.Close()
 
-	batchSize := 500 // Tamaño del lote
+	batchSize := 500
 	for i := 0; i < len(cities); i += batchSize {
 		end := i + batchSize
 		if end > len(cities) {
