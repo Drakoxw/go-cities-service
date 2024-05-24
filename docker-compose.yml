@@ -5,7 +5,7 @@ services:
     image: mysql:8.0
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ""  # O puedes usar MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: ""  # O MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: drakodb
     ports:
       - "3308:3306"  # Mapea el puerto 3306 del contenedor al puerto 3308 del host
@@ -20,7 +20,7 @@ services:
     depends_on:
       - mysql
     environment:
-      DSN: root:@tcp(mysql:3306)/drakodb  # Cambia a 3306 porque es el puerto interno de MySQL en el contenedor
+      DSN: root:@tcp(mysql:3306)/drakodb
 
 volumes:
   mysql-data:
