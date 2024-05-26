@@ -19,8 +19,8 @@ import (
 )
 
 func main() {
-	dsn := "root:@tcp(localhost:3307)/drakodb" // conexion local
-	// dsn := "root:@tcp(mysql:3306)/drakodb"
+	// dsn := "root:@tcp(localhost:3307)/drakodb" // conexion local
+	dsn := "root:7d#6!0#AAbZv@tcp(mysql:3306)/drakodb"
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
