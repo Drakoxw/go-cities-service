@@ -4,6 +4,8 @@ Repositorio con el servicio de busqueda de ciudades de colombia, listando el nom
 
 <b style="color: green">Cada 24 horas actuliza la base de datos. Tambien cuenta con webHook para solicitar la actulizacion de datos</b>
 
+<b style="color: blue">En la rama `master` esta el proyecto sin base de datos en caso que haya problemas con MYSQL.</b>
+
 ### Herramientas
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
