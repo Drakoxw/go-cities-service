@@ -1,5 +1,4 @@
-# Etapa 1: Construcción del binario
-FROM golang:1.18 AS builder
+FROM golang:1.19 AS builder
 
 # Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
@@ -24,8 +23,6 @@ COPY --from=builder /app/citysearch .
 
 # Copiar el archivo de datos
 COPY data/cities.json ./data/cities.json
-
-
 
 # Exponer el puerto 3010
 EXPOSE 3010

@@ -34,15 +34,19 @@ func SearchCities(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, utils.BabResponse("Se requiere al menos 3 caracteres"))
 	}
 
-	// Validar los sort permitidos
-	validSorts := map[string]bool{"nombre": true, "codigodane": true, "departamento": true}
-	if !validSorts[sortParam] {
-		return c.JSON(http.StatusBadRequest, utils.BabResponse("Parámetro de busqueda inválido"))
+	if sortParam != "" {
+		// Validar los sort permitidos
+		validSorts := map[string]bool{"nombre": true, "codigodane": true, "departamento": true}
+		if !validSorts[sortParam] {
+			return c.JSON(http.StatusBadRequest, utils.BabResponse("Parámetro de busqueda inválido"))
+		}
 	}
 
-	orderParam = strings.ToUpper(orderParam)
-	if orderParam != "ASC" && orderParam != "DESC" {
-		return c.JSON(http.StatusBadRequest, utils.BabResponse("Parámetro de orden inválido"))
+	if orderParam != "" {
+		orderParam = strings.ToUpper(orderParam)
+		if orderParam != "ASC" && orderParam != "DESC" {
+			return c.JSON(http.StatusBadRequest, utils.BabResponse("Parámetro de orden inválido"))
+		}
 	}
 
 	var resultado []models.City
