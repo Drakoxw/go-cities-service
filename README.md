@@ -4,6 +4,8 @@ Repositorio con el servicio de busqueda de ciudades de colombia, listando el nom
 
 <b style="color: green">Cada 24 horas actuliza la base de datos. Tambien cuenta con webHook para solicitar la actulizacion de datos</b>
 
+<b style="color: blue">En la rama `main` esta el proyecto con una base de datos MYSQL implementada.</b>
+
 ### Herramientas
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
@@ -15,23 +17,6 @@ Repositorio con el servicio de busqueda de ciudades de colombia, listando el nom
 ```bash
 go mod download
 ```
-### 2. Configurar la Base de Datos
-```bash
-CREATE DATABASE drakodb;
-```
-### 3. Crear la Tabla:
-```bash
-USE drakodb;
-
-CREATE TABLE cities (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_dane VARCHAR(255) NOT NULL,
-    nombre VARCHAR(255) NOT NULL,
-    departamento VARCHAR(255) NOT NULL
-);
-```
-### 3.1 DNS db
-> DSN=user_db:password_db@tcp(localhost:3306)/drakodb
 
 ### 4. Iniciar App
 ```bash
@@ -64,16 +49,16 @@ go run cmd/main.go
 
 ### Actualizar por demanda `manual`
 
-* Endpoint: `/update-data`
+* Endpoint: `/webhook/update-cities`
 * Método: `POST`
 * Descripción: Actualiza los datos de las ciudades desde el archivo JSON en línea.
 
-> POST "http://localhost:3010/update-data"
+> POST "http://localhost:3010/webhook/update-cities"
 
 ## Mantenimiento y Actualización
 
 ### Actualizar Datos de Ciudades
-El servicio tiene una tarea periódica que actualiza los datos de las ciudades cada 24 horas. También puedes actualizar los datos manualmente utilizando el endpoint `/update-data`.
+El servicio tiene una tarea periódica que actualiza los datos de las ciudades cada 24 horas. También puedes actualizar los datos manualmente utilizando el endpoint `/webhook/update-cities`.
 
 ## Generar Binarios
 
