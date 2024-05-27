@@ -30,7 +30,7 @@ func SearchCities(c echo.Context) error {
 	sortParam := c.QueryParam("sort")
 	orderParam := c.QueryParam("order")
 
-	if len(query) < 4 {
+	if len(query) < 3 {
 		return c.JSON(http.StatusBadRequest, utils.BabResponse("Se requiere al menos 3 caracteres"))
 	}
 
