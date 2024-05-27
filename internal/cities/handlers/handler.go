@@ -9,8 +9,6 @@ import (
 	"github.com/Drakoxw/go-cities-service/internal/cities/functions"
 	"github.com/Drakoxw/go-cities-service/internal/cities/utils"
 	"github.com/Drakoxw/go-cities-service/internal/models"
-
-	// "github.com/Drakoxw/go-cities-service/internal/models"
 	"github.com/labstack/echo/v4"
 )
 

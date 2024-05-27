@@ -5,10 +5,11 @@ import (
 	"github.com/Drakoxw/go-cities-service/internal/models"
 )
 
-func UpdateCities() {
-	var err error
-	models.CitiesList, err = functions.LoadCitiesStart("data/cities.json")
+func UpdateCities() error {
+	cities, err := functions.GetCitiesFromFile()
 	if err != nil {
-		println(err.Error())
+		return err
 	}
+	models.CitiesList = cities
+	return nil
 }
