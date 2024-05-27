@@ -1,27 +1,8 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: "7d#6!0#AAbZv"
-      MYSQL_DATABASE: drakodb
-    ports:
-      - "3308:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-
   app:
     build: .
     container_name: citysearch
     ports:
       - "3010:3010"
-    depends_on:
-      - mysql
-    environment:
-      DSN: root:7d#6!0#AAbZv@tcp(mysql:3306)/drakodb
-    entrypoint: ["./wait-for-it.sh", "mysql:3306", "--", "./citysearch"]
-
-volumes:
-  mysql-data:

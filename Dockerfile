@@ -25,14 +25,10 @@ COPY --from=builder /app/citysearch .
 # Copiar el archivo de datos
 COPY data/cities.json ./data/cities.json
 
-# Copiar el script wait-for-it
-COPY wait-for-it.sh .
 
-# Hacer ejecutable el script wait-for-it
-RUN chmod +x wait-for-it.sh
 
 # Exponer el puerto 3010
 EXPOSE 3010
 
 # Ejecutar el binario
-CMD ["./wait-for-it.sh", "mysql", "--", "./citysearch"]
+CMD ["./citysearch"]
