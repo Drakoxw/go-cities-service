@@ -2,84 +2,120 @@ package handlers
 
 import (
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/Drakoxw/go-cities-service/internal/cities/functions"
-	"github.com/Drakoxw/go-cities-service/internal/cities/usecase"
 	"github.com/Drakoxw/go-cities-service/internal/cities/utils"
 	"github.com/Drakoxw/go-cities-service/internal/models"
+
+	// "github.com/Drakoxw/go-cities-service/internal/models"
 	"github.com/labstack/echo/v4"
 )
 
-type CityHandler struct {
-	CityUC *usecase.CityUseCase
-}
-
-func NewCityHandler(e *echo.Echo, uc *usecase.CityUseCase) {
-	handler := &CityHandler{CityUC: uc}
-	e.GET("/search", handler.SearchCities)
-	e.POST("/webhook/update-cities", handler.UpdateCities)
-}
-
-func (h *CityHandler) UpdateCities(c echo.Context) error {
-
+func UpdateCities(c echo.Context) error {
 	cities, err := functions.GetCitiesFromFile()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, utils.BabResponse(err.Error()))
+		return c.JSON(http.StatusBadRequest, utils.BabResponse(err.Error()))
 	}
 
-	if err := h.CityUC.UpdateCities(c.Request().Context(), cities); err != nil {
-		return c.JSON(http.StatusInternalServerError, utils.BabResponse(err.Error()))
-	}
+	models.CitiesList = cities
 
-	return c.JSON(http.StatusOK, utils.OkResponse("Ciudades actualizadas correctamente"))
+	return c.JSON(http.StatusOK, utils.OkResponse("Datos actualizados"))
 }
 
-func (h *CityHandler) SearchCities(c echo.Context) error {
-	name := c.QueryParam("query")
-	page, _ := strconv.Atoi(c.QueryParam("page"))
-	limit, _ := strconv.Atoi(c.QueryParam("limit"))
-	sort := c.QueryParam("sort")
-	order := c.QueryParam("order")
+func SearchCities(c echo.Context) error {
+	query := c.QueryParam("query")
+	limitParam := c.QueryParam("limit")
+	pageParam := c.QueryParam("page")
+	sortParam := c.QueryParam("sort")
+	orderParam := c.QueryParam("order")
 
-	if len(name) < 4 {
-		return c.JSON(http.StatusBadRequest, utils.BabResponse("Se requie al menos 3 caracteres"))
-	}
-
-	if page <= 0 {
-		page = 1
-	}
-	if limit <= 0 {
-		limit = 10
-	}
-	if sort == "" {
-		sort = "nombre"
-	}
-	if order == "" {
-		order = "ASC"
+	if len(query) < 4 {
+		return c.JSON(http.StatusBadRequest, utils.BabResponse("Se requiere al menos 3 caracteres"))
 	}
 
-	validSorts := map[string]bool{"id": true, "nombre": true, "codigodane": true, "departamento": true}
-	if !validSorts[sort] {
-		return c.JSON(http.StatusBadRequest, utils.BabResponse("Parámetro de ordenación inválido"))
+	// Validar los sort permitidos
+	validSorts := map[string]bool{"nombre": true, "codigodane": true, "departamento": true}
+	if !validSorts[sortParam] {
+		return c.JSON(http.StatusBadRequest, utils.BabResponse("Parámetro de busqueda inválido"))
 	}
 
-	order = strings.ToUpper(order)
-	if order != "ASC" && order != "DESC" {
+	orderParam = strings.ToUpper(orderParam)
+	if orderParam != "ASC" && orderParam != "DESC" {
 		return c.JSON(http.StatusBadRequest, utils.BabResponse("Parámetro de orden inválido"))
 	}
 
-	cities, err := h.CityUC.SearchCities(c.Request().Context(), name, page, limit, sort, order)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, utils.BabResponse(err.Error()))
+	var resultado []models.City
+
+	// Filtrar ciudades por el query
+	for _, ciudad := range models.CitiesList {
+		dataFilteredForKey := ciudad.Nombre
+		switch sortParam {
+		case "codigodane":
+			dataFilteredForKey = ciudad.CodigoDANE
+		case "departamento":
+			dataFilteredForKey = ciudad.Departamento
+		}
+		if strings.Contains(strings.ToLower(dataFilteredForKey), strings.ToLower(query)) {
+			resultado = append(resultado, ciudad)
+		}
 	}
 
-	message := "registros encontrados"
-	if cities == nil {
-		message = "no hubieron coincidencias"
-		cities = []models.City{}
+	// Ordenar resultados
+	if sortParam != "" {
+		switch sortParam {
+		case "codigodane":
+			sort.Slice(resultado, func(i, j int) bool {
+				if orderParam == "DESC" {
+					return resultado[i].CodigoDANE > resultado[j].CodigoDANE
+				}
+				return resultado[i].CodigoDANE < resultado[j].CodigoDANE
+			})
+		case "nombre":
+			sort.Slice(resultado, func(i, j int) bool {
+				if orderParam == "DESC" {
+					return resultado[i].Nombre > resultado[j].Nombre
+				}
+				return resultado[i].Nombre < resultado[j].Nombre
+			})
+		case "departamento":
+			sort.Slice(resultado, func(i, j int) bool {
+				if orderParam == "DESC" {
+					return resultado[i].Departamento > resultado[j].Departamento
+				}
+				return resultado[i].Departamento < resultado[j].Departamento
+			})
+		}
 	}
 
-	return c.JSON(http.StatusOK, utils.OkResponseData(message, cities))
+	// Paginación y límite
+	limit := 10
+	if limitParam != "" {
+		parsedLimit, err := strconv.Atoi(limitParam)
+		if err == nil && parsedLimit > 0 {
+			limit = parsedLimit
+		}
+	}
+
+	page := 1
+	if pageParam != "" {
+		parsedPage, err := strconv.Atoi(pageParam)
+		if err == nil && parsedPage > 0 {
+			page = parsedPage
+		}
+	}
+
+	start := (page - 1) * limit
+	end := start + limit
+
+	if start > len(resultado) {
+		start = len(resultado)
+	}
+	if end > len(resultado) {
+		end = len(resultado)
+	}
+
+	return c.JSON(http.StatusOK, utils.OkResponseData("Data found", resultado[start:end]))
 }

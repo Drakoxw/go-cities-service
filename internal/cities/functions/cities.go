@@ -3,6 +3,7 @@ package functions
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"os"
 
@@ -44,4 +45,26 @@ func GetCitiesFromFile() ([]models.City, error) {
 
 	return cities, nil
 
+}
+
+func LoadCitiesStart(ruta string) ([]models.City, error) {
+	var ciudades []models.City
+
+	archivo, err := os.Open(ruta)
+	if err != nil {
+		return nil, err
+	}
+	defer archivo.Close()
+
+	bytes, err := io.ReadAll(archivo)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(bytes, &ciudades)
+	if err != nil {
+		return nil, err
+	}
+
+	return ciudades, nil
 }
