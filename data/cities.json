@@ -1010,6 +1010,11 @@
     "departamento": "CORDOBA"
   },
   {
+    "codigodane": "41551001",
+    "nombre": "BRUSELAS(HUILA)",
+    "departamento": "HUILA"
+  },
+  {
     "codigodane": "68001000",
     "nombre": "BUCARAMANGA(SANTANDER)",
     "departamento": "SANTANDER"
@@ -4333,6 +4338,11 @@
     "codigodane": "23001044",
     "nombre": "LA FLORIDA(CORDOBA)",
     "departamento": "CORDOBA"
+  },
+  {
+    "codigodane": "25040002",
+    "nombre": "LA FLORIDA(CUNDINAMARCA)",
+    "departamento": "CUNDINAMARCA"
   },
   {
     "codigodane": "52381000",
@@ -8748,6 +8758,11 @@
     "codigodane": "13001013",
     "nombre": "TIERRA BOMBA(BOLIVAR)",
     "departamento": "BOLIVAR"
+  },
+  {
+    "codigodane": "15861008",
+    "nombre": "TIERRA NEGRA(BOYACA)",
+    "departamento": "BOYACA"
   },
   {
     "codigodane": "23807000",
