@@ -3,30 +3,45 @@ package functions
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
+	"os"
 
 	"github.com/Drakoxw/go-cities-service/internal/models"
 )
 
 func GetCitiesFromFile() ([]models.City, error) {
+	// URL del archivo JSON
 	url := "https://app.aveonline.co/assets/resources/public/listadociudades.json"
 
+	// Obtener los datos desde la URL
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, errors.New("Error al descargar el archivo JSON")
+		return nil, errors.New("No se pudieron obtener los datos desde la URL")
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.New("Error al leer el archivo JSON")
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("Respuesta no exitosa desde la URL")
 	}
 
 	var cities []models.City
-	if err := json.Unmarshal(body, &cities); err != nil {
-		return nil, errors.New("Error al decodificar el archivo JSON")
+	err = json.NewDecoder(resp.Body).Decode(&cities)
+	if err != nil {
+		return nil, errors.New("No se pudieron decodificar los datos")
+	}
+
+	// Escribir nuevos datos en el archivo JSON
+	bytes, err := json.MarshalIndent(cities, "", "  ")
+	if err != nil {
+		return nil, errors.New("No se pudieron codificar los datos")
+	}
+
+	// Se reescribe el archivo tambn por si las dudas
+	err = os.WriteFile("data/cities.json", bytes, 0644)
+	if err != nil {
+		return nil, errors.New("No se pudieron guardar los datos")
 	}
 
 	return cities, nil
+
 }
